@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>Pedir datos a servidor externo</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="jquery-3.3.1.js"></script>
+    </head>
+    <!--    <body onload="peticioAjax('https://cors.io/?http://wservice.viabicing.cat/v2/stations?format=json')">-->
+    <body onload="cargada()">
+        <script>
+            var actualizacion;
+            function cargada() {
+                setInterval("peticioAjax('https://cors.io/?http://wservice.viabicing.cat/v2/stations?format=json')", 1000);
+            }
+
+            function peticioAjax(url) {
+                var hayActualizacion;
+                var tipoBike = 0;
+                var tipoBikeElectric = 0;
+                var bicisBike = 0;
+                var bicisBikeElectric = 0;
+                var slotsBike = 0;
+                var slotsBikeElectric = 0;
+                var jqxhr = $.getJSON(url);
+                jqxhr.done(function (data) {
+                    console.log(data);
+                    if (actualizacion == data.updateTime) {
+                        hayActualizacion = false;
+                    } else {
+                        hayActualizacion = true;
+                        actualizacion = data.updateTime;
+                    }
+                    for (var i = 0; i < data.stations.length; i++) {
+                        if (data.stations[i].type == 'BIKE') {
+                            tipoBike++;
+                            bicisBike += parseInt(data.stations[i].bikes);
+                            slotsBike += parseInt(data.stations[i].slots);
+                        } else {
+                            tipoBikeElectric++;
+                            bicisBikeElectric += parseInt(data.stations[i].bikes);
+                            slotsBikeElectric += parseInt(data.stations[i].slots);
+                        }
+                        console.log(data.stations[i].type);
+                    }
+                    if (hayActualizacion) {
+                        $('body').append("Actualizacion: <strong>" + actualizacion + "</strong><br>");
+                        $('body').append("Estaciones de tipo Bike Electric: <strong>" + tipoBike + "</strong> con bicis disponibles: <strong>" + bicisBike + "</strong> y número de slots: <strong>" + slotsBike + "</strong><br>");
+                        $('body').append("Estaciones de tipo Bike Electric: <strong>" + tipoBikeElectric + "</strong> con bicis disponibles: <strong>" + bicisBikeElectric + "</strong> y número de slots: <strong>" + slotsBikeElectric + "</strong><br>");
+                    }
+                })
+                jqxhr.fail(function (data) {
+                    alert("Error");
+                })
+            }
+
+        </script>
+
+
+    </body>
+</html>

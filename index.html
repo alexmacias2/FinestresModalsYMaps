@@ -10,14 +10,46 @@ and open the template in the editor.
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <script src="jquery-3.3.1.js"></script>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">   
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
     </head>
     <!--    <body onload="peticioAjax('https://cors.io/?http://wservice.viabicing.cat/v2/stations?format=json')">-->
     <body onload="cargada()">
+        <button type="button" class="btn btn-primary" data-toggle='modal' data-target="#modalFrecuencia">Pulsa para cambiar la frecuencia</button>
+        <button type="button" class="btn btn-primary" data-toggle='modal' data-target="#modalStop">Stop</button>
+        <button type="button" class="btn btn-primary" data-toggle='modal' data-target="#modalReanuda">Reanuda</button>
+        <label id='tiempoActu'></label>
+        
+
+        <div id="modalFrecuencia" class="modal fade" role="dialog">
+            <div class="modal-dialog">
+
+                <!-- Modal content-->
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        <h4 class="modal-title">Frecuencia de actualización</h4>
+                    </div>
+                    <div class="modal-body">
+                        <input  id=frecuencia  type='number' min="1" max="10">
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        <button type="button" onclick="cambiarFrecuencia()" data-dismiss="modal" class="btn btn-primary">Guardar Cambios</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
         <script>
             var actualizacion;
+            var tiempoActualizacion = 3000;
             function cargada() {
-                setInterval("peticioAjax('https://cors.io/?http://wservice.viabicing.cat/v2/stations?format=json')", 1000);
+                setInterval("peticioAjax('https://cors.io/?http://wservice.viabicing.cat/v2/stations?format=json')", tiempoActualizacion);
             }
+
+             $('#tiempoActu').text("Frecuencia de actualización actual: " + tiempoActualizacion / 1000);
+            
 
             function peticioAjax(url) {
                 var hayActualizacion;
@@ -47,9 +79,10 @@ and open the template in the editor.
                             slotsBikeElectric += parseInt(data.stations[i].slots);
                         }
                         console.log(data.stations[i].type);
+                        console.log(tiempoActualizacion);
                     }
                     if (hayActualizacion) {
-                        $('body').append("Actualizacion: <strong>" + actualizacion + "</strong><br>");
+                        $('body').append("<br>Actualizacion: <strong>" + actualizacion + "</strong><br>");
                         $('body').append("Estaciones de tipo Bike Electric: <strong>" + tipoBike + "</strong> con bicis disponibles: <strong>" + bicisBike + "</strong> y número de slots: <strong>" + slotsBike + "</strong><br>");
                         $('body').append("Estaciones de tipo Bike Electric: <strong>" + tipoBikeElectric + "</strong> con bicis disponibles: <strong>" + bicisBikeElectric + "</strong> y número de slots: <strong>" + slotsBikeElectric + "</strong><br>");
                     }
@@ -57,6 +90,12 @@ and open the template in the editor.
                 jqxhr.fail(function (data) {
                     alert("Error");
                 })
+            }
+            
+           function cambiarFrecuencia(){
+               tiempoActualizacion= $("#frecuencia").val()*1000;
+              
+               alert($("#frecuencia").val());
             }
 
         </script>

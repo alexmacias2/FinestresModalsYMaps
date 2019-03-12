@@ -12,14 +12,48 @@ and open the template in the editor.
         <script src="jquery-3.3.1.js"></script>
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">   
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+        <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+
+        <script type="text/javascript">
+            google.charts.load('current', {'packages': ['corechart']});
+
+            // Set a callback to run when the Google Visualization API is loaded.
+            google.charts.setOnLoadCallback(drawChart);
+
+            // Callback that creates and populates a data table,
+            // instantiates the pie chart, passes in the data and
+            // draws it.
+            function drawChart() {
+
+                // Create the data table.
+                var data = new google.visualization.DataTable();
+                data.addColumn('string', 'Bikes');
+                data.addColumn('number', 'Slices');
+                data.addRows([
+                    ['BIKE', tipoBike],
+                    ['BIKE-ELECTRIC', tipoBikeElectric],
+                ]);
+
+                // Set chart options
+                var options = {'title': 'How Much Pizza I Ate Last Night',
+                    'width': 400,
+                    'height': 300};
+
+                // Instantiate and draw our chart, passing in some options.
+                var chart = new google.visualization.PieChart(document.getElementById('chart_div'));
+                chart.draw(data, options);
+            }
+        </script>
+
     </head>
     <!--    <body onload="peticioAjax('https://cors.io/?http://wservice.viabicing.cat/v2/stations?format=json')">-->
     <body onload="cargada()">
         <button type="button" class="btn btn-primary" data-toggle='modal' data-target="#modalFrecuencia">Pulsa para cambiar la frecuencia</button>
-        <button type="button" class="btn btn-primary" data-toggle='modal' data-target="#modalStop">Stop</button>
-        <button type="button" class="btn btn-primary" data-toggle='modal' data-target="#modalReanuda">Reanuda</button>
+        <button type="button" class="btn btn-primary" onclick="stop()">Stop</button>
+        <button type="button" class="btn btn-primary" onclick="reanuda()">Reanuda</button>
+        <div id="chart_div"></div>
         <label id='tiempoActu'></label>
-        
+
 
         <div id="modalFrecuencia" class="modal fade" role="dialog">
             <div class="modal-dialog">
@@ -44,17 +78,19 @@ and open the template in the editor.
         <script>
             var actualizacion;
             var tiempoActualizacion = 3000;
+            var repite = null;
+            var tipoBike = 0;
+            var tipoBikeElectric = 0;
             function cargada() {
-                setInterval("peticioAjax('https://cors.io/?http://wservice.viabicing.cat/v2/stations?format=json')", tiempoActualizacion);
+                repite = setInterval("peticioAjax('https://cors.io/?http://wservice.viabicing.cat/v2/stations?format=json')", tiempoActualizacion);
             }
 
-             $('#tiempoActu').text("Frecuencia de actualización actual: " + tiempoActualizacion / 1000);
-            
+            $('#tiempoActu').text("Frecuencia de actualización actual: " + tiempoActualizacion / 1000);
 
             function peticioAjax(url) {
                 var hayActualizacion;
-                var tipoBike = 0;
-                var tipoBikeElectric = 0;
+                tipoBike = 0;
+                tipoBikeElectric = 0;
                 var bicisBike = 0;
                 var bicisBikeElectric = 0;
                 var slotsBike = 0;
@@ -78,10 +114,10 @@ and open the template in the editor.
                             bicisBikeElectric += parseInt(data.stations[i].bikes);
                             slotsBikeElectric += parseInt(data.stations[i].slots);
                         }
-                        console.log(data.stations[i].type);
                         console.log(tiempoActualizacion);
                     }
                     if (hayActualizacion) {
+                        drawChart();
                         $('body').append("<br>Actualizacion: <strong>" + actualizacion + "</strong><br>");
                         $('body').append("Estaciones de tipo Bike Electric: <strong>" + tipoBike + "</strong> con bicis disponibles: <strong>" + bicisBike + "</strong> y número de slots: <strong>" + slotsBike + "</strong><br>");
                         $('body').append("Estaciones de tipo Bike Electric: <strong>" + tipoBikeElectric + "</strong> con bicis disponibles: <strong>" + bicisBikeElectric + "</strong> y número de slots: <strong>" + slotsBikeElectric + "</strong><br>");
@@ -91,12 +127,21 @@ and open the template in the editor.
                     alert("Error");
                 })
             }
-            
-           function cambiarFrecuencia(){
-               tiempoActualizacion= $("#frecuencia").val()*1000;
-              
-               alert($("#frecuencia").val());
+
+            function cambiarFrecuencia() {
+                tiempoActualizacion = $("#frecuencia").val() * 1000;
+                $('#tiempoActu').text("Frecuencia de actualización actual: " + tiempoActualizacion / 1000);
             }
+
+            function stop() {
+                clearInterval(repite);
+            }
+            function reanuda() {
+                cargada();
+            }
+
+
+
 
         </script>
 
